@@ -1,0 +1,38 @@
+name: 'Yarn build'
+description: 'Setup node and yarn, then runs yarn install and yarn build'
+inputs:
+  node-version:
+    description: 'Node version'
+    required: false
+    default: 18.x
+  npm-secret:
+    description: 'Chave secreta para acessar o npm registry'
+    required: true
+runs:
+  using: "composite"
+  steps:
+  - name: Setup yarn with node ${{ inputs.node-version }}
+    uses: actions/setup-node@v2
+    with:
+      node-version: ${{ inputs.node-version }}
+      cache: 'npm'
+      
+  - name: Setup yarn
+    run: npm install --global yarn
+    shell: bash
+    
+  - name: Setup npm registry
+    run: echo '//npm.pkg.github.com/:_authToken=${{ inputs.npm-secret }}' > ~/.npmrc
+    shell: bash
+
+  - name: Yarn install
+    run: yarn install
+    shell: bash
+    
+  - name: Yarn lerna bootstrap
+    run: yarn lerna bootstrap
+    shell: bash
+    
+  - name: Yarn lerna build
+    run: yarn lerna run build
+    shell: bash
